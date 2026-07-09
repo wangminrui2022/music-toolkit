@@ -30,6 +30,7 @@ from logger_manager import LoggerManager
 import record_audio
 #import record_allin1
 import ensure_package
+import gradient_overlay
 ensure_package.pip("requests")
 ensure_package.pip("ffmpeg-downloader")
 ensure_package.pip("pydub", "pydub", "AudioSegment")
@@ -64,21 +65,20 @@ def ensure_ffmpeg():
     logger.info(f"✅ ffmpeg 已就绪 → {ffdl.ffmpeg_path}")
     return True
 
-if __name__ == "__main__":
-    env_manager.check_python_version()
-    env_manager.setup_venv()    
-    ensure_ffmpeg()
+def run_operation():
+    logger.info(f"【第一步】启动全屏Overlay特效...")
+    # ==============================================
+    # 核心：先弹出UI，强制刷新，等待完全显示
+    # ==============================================
+    gradient_overlay.start_overlay()
+    gradient_overlay.overlay.refresh()
+    gradient_overlay.safe_sleep(0.8)  # 等待UI完全渲染
+    logger.info(f"✅ Overlay已显示，开始执行任务")
 
-    parser = argparse.ArgumentParser(description="AI 驱动型系统音频录制与精准切歌工具")
-    parser.add_argument("-t", "--duration", type=str, default=10.0, required=True, help="预计录制总时长（分钟）")
-    #parser.add_argument("-ai", "--ai-split", action="store_true", help="是否开启 AI 多首歌曲录制并自动精准切割模式")
-    parser.add_argument("-d", "--save-dir", type=str, default="record", help="单曲输出目录")
-    parser.add_argument("-p", "--filename-prefix", type=str, default=None, help="文件名前缀")
-    parser.add_argument("-trim", "--auto-trim", action="store_true", help="是否自动裁剪歌曲前后的静音/杂音")
-    parser.add_argument("-sh", "--silence-thresh", type=int, default=-45, help="静音分贝阈值 (dBFS)，默认 -45")
-    parser.add_argument("-msl", "--min-silence-len", type=int, default=1000, help="判定为静音的最短时间 (毫秒)")
+    # UI显示完成后，再执行核心任务
+    start_record()
 
-    args = parser.parse_args()
+def start_record():
     
     duration_min=args.duration
     if re.fullmatch(r"\d+(\.\d+)?", duration_min) and float(duration_min) > 0:
@@ -91,6 +91,7 @@ if __name__ == "__main__":
             output_wav = f"{filename}.wav"
             output_mp3 = f"{filename}.mp3"
         
+ 
         #执行哪种录制流程
         # if args.ai_split:#执行录制多首并由 AI 切割的逻辑
         #     success, msg = record_allin1.record_and_ai_precise_split(
@@ -108,3 +109,23 @@ if __name__ == "__main__":
         logger.info(f"✅ success → {result}")
     else:
         logger.info(f"\n❌ 录音 -u 必须输入整数：{duration_min}")
+
+
+if __name__ == "__main__":
+    env_manager.check_python_version()
+    env_manager.setup_venv()    
+    ensure_ffmpeg()
+
+    parser = argparse.ArgumentParser(description="AI 驱动型系统音频录制与精准切歌工具")
+    parser.add_argument("-t", "--duration", type=str, default=10.0, required=True, help="预计录制总时长（分钟）")
+    #parser.add_argument("-ai", "--ai-split", action="store_true", help="是否开启 AI 多首歌曲录制并自动精准切割模式")
+    parser.add_argument("-d", "--save-dir", type=str, default="record", help="单曲输出目录")
+    parser.add_argument("-p", "--filename-prefix", type=str, default=None, help="文件名前缀")
+    parser.add_argument("-trim", "--auto-trim", action="store_true", help="是否自动裁剪歌曲前后的静音/杂音")
+    parser.add_argument("-sh", "--silence-thresh", type=int, default=-45, help="静音分贝阈值 (dBFS)，默认 -45")
+    parser.add_argument("-msl", "--min-silence-len", type=int, default=1000, help="判定为静音的最短时间 (毫秒)")
+
+    args = parser.parse_args()
+
+    run_operation()
+
