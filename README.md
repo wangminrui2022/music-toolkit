@@ -47,10 +47,20 @@
 
 ## 🚀 典型应用场景与终端示例 (Terminal Usage)
 
+### **在 OpenClaw 聊天中**
+
+你可以直接对你的 Agent 说：
+
+    帮我录音 5 分钟
+
+    录制电脑正在播放的声音，录 3 分钟
+
+    录制系统声音 5 分钟
+
 ### 1. 基础录音与裁剪
-录制系统声音 5 分钟，自动切除前后的静音段：
 ```bash
 python scripts/media_grabber.py -t 5 -trim
 python scripts/media_grabber.py -t 5 -p "乌兰巴托的夜" -trim 
 python scripts/media_grabber.py -t 5 -d "F:/录制音乐" -trim -ai
 python scripts/media_grabber.py -t 10 -trim -ai
+
